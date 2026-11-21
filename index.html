@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101a2b">
+<title>Giro Smart — Giro Letture 2.0</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0b1220;--panel:#121e31;--panel2:#18263c;--line:#2a3a53;--text:#f2f6fb;--muted:#9fb0c7;--teal:#29d3c2;--gold:#e9b95d;--red:#ff737d;--green:#7be0a2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#1b3450 0,transparent 30%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:20px clamp(16px,4vw,42px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:44px;height:44px;border:1px solid #54708c;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#203b55,#101b2d);color:var(--gold);font-size:24px}.brand h1{font-size:20px;letter-spacing:.14em;margin:0}.brand small{display:block;color:var(--muted);letter-spacing:.08em;font-size:10px}
+.pill{border:1px solid #3a536d;color:#b9d4e7;border-radius:99px;padding:7px 11px;font-size:12px}
+main{max-width:1440px;margin:auto;padding:22px clamp(12px,3vw,32px) 40px}.intro{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}.intro h2{margin:0 0 4px;font-size:clamp(23px,3vw,32px)}.intro p{margin:0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(310px,390px) 1fr;gap:16px}.panel{background:linear-gradient(180deg,#142238,#101b2d);border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 16px 45px #0003}.panel h3{font-size:15px;margin:0 0 12px;letter-spacing:.03em}.section{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}.section:last-child{border:0;margin:0;padding:0}
+label{display:block;color:#c1d0e2;font-size:12px;margin:0 0 6px}textarea,input,select{width:100%;background:#0b1525;color:var(--text);border:1px solid #344963;border-radius:10px;padding:11px 12px;font:inherit;outline:none}textarea{min-height:130px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px #29d3c21c}
+.row{display:flex;gap:9px}.row>*{flex:1;min-width:0}.btn{border:0;border-radius:10px;padding:11px 13px;font-weight:700;cursor:pointer;background:var(--teal);color:#06212a}.btn.secondary{background:#263a53;color:#e6f0fa;border:1px solid #3a526d}.btn.gold{background:var(--gold);color:#241a08}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.small{padding:8px 10px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.hint{font-size:11px;color:var(--muted);margin-top:7px}.status{font-size:12px;color:#b8c9dc;margin-top:9px;min-height:18px}.status.error{color:var(--red)}.status.ok{color:var(--green)}
+.mapwrap{min-height:540px;display:flex;flex-direction:column;gap:12px}.maphead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#0c1728;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12px;color:var(--muted)}.stat b{display:block;color:var(--text);font-size:16px}
+#map{height:440px;min-height:320px;border-radius:13px;overflow:hidden;border:1px solid #344963;background:#dce6eb;z-index:1}.mapnote{font-size:11px;color:var(--muted)}
+.stoplist{display:grid;gap:7px;max-height:270px;overflow:auto}.stop{display:flex;align-items:center;gap:10px;background:#0c1728;border:1px solid #283b54;border-radius:11px;padding:9px}.num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#1e5960;color:#baf9ee;font-weight:800;font-size:12px;flex:none}.stop.done{opacity:.55}.stop.done .address{text-decoration:line-through}.address{font-size:13px;flex:1}.sub{font-size:11px;color:var(--muted)}.stop button{background:transparent;color:#a9bdd3;border:0;cursor:pointer;font-size:17px}
+footer{max-width:1440px;margin:0 auto;padding:0 24px 28px;color:#8094ad;font-size:11px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.mapwrap{min-height:0}#map{height:390px}.intro{align-items:start;flex-direction:column}}
+@media(max-width:480px){header{padding:14px}.pill{display:none}.panel{padding:13px}#map{height:340px}.row.stack{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="mark">⌖</div><div><h1>GIRO SMART</h1><small>GIRO LETTURE 2.0 · ROUTE MANAGEMENT</small></div></div>
+  <div class="pill">PROTOTIPO · VERSIONE 0.1</div>
+</header>
+<main>
+  <div class="intro"><div><h2>Organizza il tuo prossimo giro.</h2><p>Importa gli indirizzi, scegli la partenza e prepara il percorso.</p></div><div class="pill">Pensato per chi lavora sul territorio</div></div>
+  <div class="layout">
+    <section class="panel">
+      <div class="section">
+        <h3>01 · Elenco letture</h3>
+        <label for="addresses">Un indirizzo per riga (via, numero, città)</label>
+        <textarea id="addresses" placeholder="Via Roma 12, Cantù&#10;Via Milano 8, Cantù&#10;Piazza Garibaldi 3, Como"></textarea>
+        <div class="actions">
+          <button class="btn" id="loadBtn">Carica indirizzi</button>
+          <label class="btn secondary small" style="display:inline-flex;align-items:center;cursor:pointer">Importa Excel / CSV / TXT <input id="dataFile" type="file" accept=".xlsx,.xls,.csv,.txt,text/plain,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden></label>
+        </div>
+        <div class="hint">Formati supportati: Excel (.xlsx, .xls), CSV e TXT. Puoi importare una colonna con gli indirizzi oppure colonne separate per via, numero civico e comune.</div>
+      </div>
+      <div class="section">
+        <h3>02 · Partenza e modalità</h3>
+        <label for="start">Punto di partenza (facoltativo)</label>
+        <input id="start" placeholder="Es. Cantù, Como">
+        <div class="actions">
+          <button class="btn secondary small" id="gpsBtn">◎ Usa posizione GPS</button>
+          <button class="btn secondary small" id="clearStart">Rimuovi partenza</button>
+        </div>
+        <div style="height:12px"></div>
+        <div class="row">
+          <div><label for="mode">Mezzo</label><select id="mode"><option value="driving">Automobile</option><option value="cycling">Bicicletta</option></select></div>
+          <div><label for="strategy">Ordine</label><select id="strategy"><option value="near">Vicino → lontano</option><option value="round">Giro compatto</option></select></div>
+        </div>
+        <div class="actions"><button class="btn gold" id="optBtn">Ottimizza percorso</button></div>
+        <div id="status" class="status" aria-live="polite">Pronto. Inserisci gli indirizzi per iniziare.</div>
+      </div>
+      <div class="section">
+        <h3>03 · Avanzamento lavoro</h3>
+        <div class="stats">
+          <div class="stat"><b id="total">0</b>Totali</div>
+          <div class="stat"><b id="completed">0</b>Completati</div>
+          <div class="stat"><b id="remaining">0</b>Rimanenti</div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary small" id="saveBtn">Salva giro</button>
+          <button class="btn secondary small" id="exportBtn">Esporta CSV</button>
+          <button class="btn secondary small" id="resetBtn">Azzera</button>
+        </div>
+      </div>
+      <div class="section">
+        <h3>04 · Tappe ordinate</h3>
+        <div class="stoplist" id="stoplist"><div class="hint">Le tappe compariranno qui dopo l'ottimizzazione.</div></div>
+      </div>
+    </section>
+    <section class="panel mapwrap">
+      <div class="maphead"><div><h3 style="margin:0">Mappa del percorso</h3><div class="hint">Visualizza le tappe e controlla il giro.</div></div><div class="actions" style="margin:0"><button class="btn secondary small" id="navBtn" disabled>Apri navigazione</button></div></div>
+      <div class="stats"><div class="stat"><b id="distance">—</b>Distanza stimata</div><div class="stat"><b id="duration">—</b>Tempo stimato</div><div class="stat"><b id="modeLabel">Automobile</b>Modalità</div></div>
+      <div id="map"></div>
+      <div class="mapnote">Mappa © OpenStreetMap. Geocodifica tramite Nominatim. Il prototipo usa servizi pubblici: non è ancora dimensionato per uso commerciale intensivo. L'ordine vicino→lontano è euristico; il traffico in tempo reale non è ancora integrato.</div>
+    </section>
+  </div>
+</main>
+<footer>GIRO SMART · Prototipo dimostrativo. I dati del giro vengono salvati localmente nel browser su questo dispositivo.</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let stops=[], startPoint=null, startMarker=null, markers=[], routeLayer=null, currentRouteUrl=null, map;
+function status(msg,type=''){ $('status').textContent=msg; $('status').className='status '+type; }
+function initMap(){
+ map=L.map('map').setView([45.72,9.1],10);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+}
+function clearMap(){markers.forEach(m=>map.removeLayer(m));markers=[];if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}if(startMarker){map.removeLayer(startMarker);startMarker=null;}}
+function pinIcon(n,done){return L.divIcon({className:'',html:`<div style="width:29px;height:29px;border-radius:50%;background:${done?'#68788b':'#137d78'};border:2px solid white;color:white;font-weight:800;display:grid;place-items:center;box-shadow:0 2px 8px #0007">${n}</div>`,iconSize:[29,29],iconAnchor:[14,14]});}
+function draw(){
+ clearMap();let pts=[];
+ if(startPoint){startMarker=L.marker([startPoint.lat,startPoint.lon],{title:'Partenza'}).addTo(map).bindPopup('Partenza');pts.push([startPoint.lat,startPoint.lon]);}
+ stops.forEach((s,i)=>{if(!s.lat)return;const m=L.marker([s.lat,s.lon],{icon:pinIcon(i+1,s.done)}).addTo(map).bindPopup(`<b>${i+1}. ${s.address}</b>${s.done?'<br>Completato':''}`);markers.push(m);pts.push([s.lat,s.lon]);});
+ if(routeLayer===null && pts.length>1 && $('mode').value==='cycling'){routeLayer=L.polyline(pts,{color:'#168c8a',weight:4,dashArray:'7 8'}).addTo(map);}
+ if(pts.length)map.fitBounds(pts,{padding:[35,35],maxZoom:15});
+ renderList();updateStats();
+}
+function renderList(){
+ const box=$('stoplist');box.innerHTML='';
+ if(!stops.length){box.innerHTML='<div class="hint">Le tappe compariranno qui dopo l\'ottimizzazione.</div>';return;}
+ stops.forEach((s,i)=>{const d=document.createElement('div');d.className='stop'+(s.done?' done':'');
+ d.innerHTML=`<div class="num">${i+1}</div><div class="address"></div><button title="Apri tappa" aria-label="Apri tappa">↗</button><button title="Rimuovi tappa" aria-label="Rimuovi tappa">×</button>`;
+ d.querySelector('.address').textContent=s.address;
+ d.querySelectorAll('button')[0].onclick=()=>{if(s.lat)map.setView([s.lat,s.lon],17);const q=encodeURIComponent(s.address);window.open(`https://www.google.com/maps/search/?api=1&query=${q}`,'_blank');};
+ d.querySelectorAll('button')[1].onclick=()=>{stops.splice(i,1);draw();};
+ d.querySelector('.num').onclick=()=>{s.done=!s.done;draw();};
+ box.appendChild(d);
+ });
+}
+function updateStats(){$('total').textContent=stops.length;$('completed').textContent=stops.filter(s=>s.done).length;$('remaining').textContent=stops.filter(s=>!s.done).length;}
+function hav(a,b){const r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dn=r(b.lon-a.lon),v=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dn/2)**2;return 6371*2*Math.atan2(Math.sqrt(v),Math.sqrt(1-v));}
+async function geocode(q){
+ const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q);
+ const res=await fetch(url);if(!res.ok)throw new Error('Servizio indirizzi non disponibile');const data=await res.json();if(!data.length)throw new Error('Indirizzo non trovato: '+q);
+ return {lat:+data[0].lat,lon:+data[0].lon};
+}
+async function geocodeBatch(){
+ for(let i=0;i<stops.length;i++){if(stops[i].lat)continue;status(`Ricerca indirizzi ${i+1}/${stops.length}: ${stops[i].address}`);stops[i]={...stops[i],...(await geocode(stops[i].address))};await new Promise(r=>setTimeout(r,1100));}
+}
+function nearestOrder(){
+ let pending=[...stops],ordered=[],origin=startPoint||pending.shift();if(!origin)return pending;
+ if(startPoint){while(pending.length){let ix=0,best=Infinity;pending.forEach((s,i)=>{const d=hav(origin,s);if(d<best){best=d;ix=i;}});origin=pending.splice(ix,1)[0];ordered.push(origin);}}
+ else {ordered=[origin];while(pending.length){let ix=0,best=Infinity;pending.forEach((s,i)=>{const d=hav(origin,s);if(d<best){best=d;ix=i;}});origin=pending.splice(ix,1)[0];ordered.push(origin);}}
+ return ordered;
+}
+async function optimize(){
+ if(!stops.length){status('Inserisci prima almeno un indirizzo.','error');return;}
+ $('optBtn').disabled=true;$('distance').textContent='—';$('duration').textContent='—';
+ try{
+  const startText=$('start').value.trim();if(startText&&!startPoint){startPoint=await geocode(startText);}
+  await geocodeBatch();
+  if(startPoint){stops=nearestOrder();}else{stops=nearestOrder();}
+  draw();
+  if($('mode').value==='driving'&&stops.length>=2){
+   status('Calcolo del tragitto stradale…');
+   const coords=(startPoint?[[startPoint.lon,startPoint.lat]]:[]).concat(stops.map(s=>[s.lon,s.lat])).map(p=>p.join(',')).join(';');
+   const url=`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=false`;
+   const r=await fetch(url);const data=await r.json();
+   if(data.code==='Ok'&&data.routes?.[0]){
+    const rt=data.routes[0];routeLayer=L.geoJSON(rt.geometry,{style:{color:'#e3ad4e',weight:5,opacity:.9}}).addTo(map);
+    map.fitBounds(routeLayer.getBounds(),{padding:[35,35]});
+    $('distance').textContent=(rt.distance/1000).toFixed(1)+' km';$('duration').textContent=Math.round(rt.duration/60)+' min';
+   }else{status('Tappe ordinate. Il servizio stradale non ha restituito un percorso completo.','error');}
+  }else if(stops.length){$('distance').textContent='—';$('duration').textContent='—';}
+  $('modeLabel').textContent=$('mode').value==='cycling'?'Bicicletta':'Automobile';
+  $('navBtn').disabled=!stops.length;
+  status('Percorso preparato. Controlla le tappe prima di partire.','ok');
+ }catch(e){status(e.message||'Errore durante la preparazione.','error');}
+ finally{$('optBtn').disabled=false;}
+}
+$('loadBtn').onclick=()=>{const lines=$('addresses').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length){status('Incolla almeno un indirizzo.','error');return;}stops=lines.map(address=>({address,done:false}));draw();status(`${stops.length} indirizzi caricati. Ora ottimizza il percorso.`,'ok');};
+function normalizeHeader(value){return String(value??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ');}
+function rowsToAddresses(rows){
+ const clean=rows.map(r=>Array.isArray(r)?r.map(v=>String(v??'').trim()):[String(r??'').trim()]).filter(r=>r.some(Boolean));
+ if(!clean.length)return [];
+ const headerKeys=['indirizzo','indirizzi','via','strada','address','ubicazione','toponimo','localita'];
+ const first=clean[0].map(normalizeHeader);
+ const addressCol=first.findIndex(h=>headerKeys.some(k=>h===k||h.startsWith(k+' ')));
+ const streetCol=first.findIndex(h=>['via','strada','indirizzo','street'].includes(h));
+ const civicCol=first.findIndex(h=>['civico','numero civico','n civico','num civico','numero','n'].includes(h));
+ const cityCol=first.findIndex(h=>['comune','citta','localita','city','paese'].includes(h));
+ const hasHeader=addressCol>=0||streetCol>=0||civicCol>=0||cityCol>=0;
+ const data=hasHeader?clean.slice(1):clean;
+ return data.map(row=>{
+   if(addressCol>=0){return [row[addressCol],cityCol>=0&&cityCol!==addressCol?row[cityCol]:''].filter(Boolean).join(', ').trim();}
+   if(streetCol>=0){return [row[streetCol],civicCol>=0?row[civicCol]:'',cityCol>=0?row[cityCol]:''].filter(Boolean).join(' ').trim();}
+   const values=row.filter(Boolean);
+   return values.length===1?values[0]:values.join(', ');
+ }).filter(Boolean).filter(v=>!/^indirizzo$/i.test(v));
+}
+$('dataFile').onchange=async e=>{
+ const f=e.target.files?.[0];if(!f)return;
+ try{
+  let addresses=[];const ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(ext==='txt'){
+   const text=await f.text();
+   addresses=text.split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>line.replace(/^\s*[0-9]+[.)-]\s*/,''));
+  }else{
+   if(!window.XLSX)throw new Error('Lettore Excel non disponibile. Controlla la connessione internet e riprova.');
+   const data=await f.arrayBuffer();
+   const workbook=XLSX.read(data,{type:'array',cellDates:false});
+   const firstSheet=workbook.Sheets[workbook.SheetNames[0]];
+   if(!firstSheet)throw new Error('Il file non contiene fogli leggibili.');
+   const rows=XLSX.utils.sheet_to_json(firstSheet,{header:1,defval:'',raw:false,blankrows:false});
+   addresses=rowsToAddresses(rows);
+  }
+  if(!addresses.length)throw new Error('Non ho trovato indirizzi nel file. Controlla che il foglio contenga una colonna indirizzo o righe di testo.');
+  $('addresses').value=addresses.join('\n');
+  $('loadBtn').click();
+  status(`Importazione completata: ${addresses.length} indirizzi letti da ${f.name}. Controlla l'elenco prima di ottimizzare.`,'ok');
+ }catch(err){status(err.message||'Impossibile leggere il file.','error');}
+ finally{e.target.value='';}
+};
+$('gpsBtn').onclick=()=>{if(!navigator.geolocation){status('GPS non disponibile in questo browser.','error');return;}status('Rilevamento posizione GPS…');navigator.geolocation.getCurrentPosition(p=>{startPoint={lat:p.coords.latitude,lon:p.coords.longitude};$('start').value='Posizione GPS';draw();status('Posizione GPS acquisita.','ok');},e=>status('Impossibile ottenere la posizione. Verifica i permessi GPS e HTTPS.','error'),{enableHighAccuracy:true,timeout:15000});};
+$('clearStart').onclick=()=>{startPoint=null;$('start').value='';draw();};
+$('optBtn').onclick=optimize;
+$('mode').onchange=()=>{$('modeLabel').textContent=$('mode').value==='cycling'?'Bicicletta':'Automobile';};
+$('saveBtn').onclick=()=>{localStorage.setItem('girosmart_current',JSON.stringify({stops,startPoint,start:$('start').value,mode:$('mode').value}));status('Giro salvato su questo dispositivo.','ok');};
+$('resetBtn').onclick=()=>{if(!confirm('Vuoi azzerare il giro corrente?'))return;stops=[];startPoint=null;$('start').value='';$('addresses').value='';$('distance').textContent='—';$('duration').textContent='—';$('navBtn').disabled=true;draw();status('Giro azzerato.');};
+$('exportBtn').onclick=()=>{if(!stops.length){status('Non ci sono tappe da esportare.','error');return;}const rows=[['Ordine','Indirizzo','Stato'],...stops.map((s,i)=>[i+1,s.address,s.done?'Completato':'Da fare'])];const csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='giro-smart-letture.csv';a.click();URL.revokeObjectURL(a.href);};
+$('navBtn').onclick=()=>{if(!stops.length)return;const dest=stops[0];let url;if(startPoint){url=`https://www.google.com/maps/dir/?api=1&origin=${startPoint.lat},${startPoint.lon}&destination=${dest.lat},${dest.lon}&travelmode=${$('mode').value==='cycling'?'bicycling':'driving'}`;}else{url=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest.address)}&travelmode=${$('mode').value==='cycling'?'bicycling':'driving'}`;}window.open(url,'_blank');};
+(function restore(){try{const x=JSON.parse(localStorage.getItem('girosmart_current')||'null');if(x){stops=x.stops||[];startPoint=x.startPoint||null;$('start').value=x.start||'';$('mode').value=x.mode||'driving';$('addresses').value=stops.map(s=>s.address).join('\n');}}catch(e){}initMap();draw();})();
+</script>
+</body>
+</html>
